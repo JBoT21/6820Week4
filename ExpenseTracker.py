@@ -283,6 +283,36 @@ def monthly_spending_graph():
 
     plt.show()
 
+def category_spending_graph():
+    expenses = load_expenses()
+
+    if not expenses:
+        print("\nNo expenses to graph.")
+        return
+
+    category_totals = defaultdict(float)
+
+    # Sum spending by category
+    for expense in expenses:
+        category_totals[expense["Category"]] += expense["Amount"]
+
+    categories = list(category_totals.keys())
+    totals = list(category_totals.values())
+
+    plt.figure(figsize=(8, 8))
+
+    plt.pie(
+        totals,
+        labels=categories,
+        autopct="%1.1f%%",
+        startangle=90
+        )
+
+    plt.title("Spending by Category")
+    plt.axis("equal")      # Makes the pie a perfect circle
+
+    plt.show()
+
 
 def menu():
     initialize_file()
@@ -296,9 +326,10 @@ def menu():
         print("5. Highest Expense")
         print("6. Export Report")
         print("7. Monthly Spending Graph")
-        print("8. Exit")
+        print("8. Spending by Category")
+        print("9. Exit")     
 
-        choice = get_menu_choice(1, 8)
+        choice = get_menu_choice(1, 9)
 
         if choice == 1:
             add_expense()
@@ -322,6 +353,9 @@ def menu():
             monthly_spending_graph()
 
         elif choice == 8:
+            category_spending_graph()
+
+        elif choice == 9:
             print("\nExiting Expense Tracker. Goodbye!")
             break
 
