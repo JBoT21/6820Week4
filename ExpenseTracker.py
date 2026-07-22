@@ -2,6 +2,7 @@ import csv
 import os
 from datetime import datetime
 from collections import defaultdict
+import matplotlib.pyplot as plt
 
 FILENAME = "expenses.csv"
 
@@ -192,6 +193,36 @@ def export_report():
     print(f"Report exported to '{report_name}'.")
 
 
+def monthly_spending_graph():
+    expenses = load_expenses()
+
+    monthly_totals = defaultdict(float)
+
+    # Sum expenses by month
+    for expense in expenses:
+        date = datetime.strptime(expense["Date"], "%Y-%m-%d")
+        month = date.strftime("%Y-%m")
+        monthly_totals[month] += expense["Amount"]
+
+        # Sort months chronologically
+    months = sorted(monthly_totals.keys())
+    totals = [monthly_totals[m] for m in months]
+
+        # Create the graph
+    plt.figure(figsize=(10, 5))
+    plt.plot(months, totals, marker='o', linewidth=2)
+
+    plt.title("Monthly Spending")
+    plt.xlabel("Month")
+    plt.ylabel("Total Spent ($)")
+    plt.grid(True)
+
+    plt.xticks(rotation=45)
+    plt.tight_layout()
+
+    plt.show()
+
+
 def menu():
     initialize_file()
 
@@ -203,7 +234,8 @@ def menu():
         print("4. Monthly Summary")
         print("5. Highest Expense")
         print("6. Export Report")
-        print("7. Exit")
+        print("7. Monthly Spending Graph")
+        print("8. Exit")
 
         choice = input("Choose an option: ").strip()
 
@@ -226,7 +258,10 @@ def menu():
             export_report()
 
         elif choice == "7":
-            print("Goodbye!")
+            monthly_spending_graph()
+            break
+        elif choice == "8":
+            print("Exiting Expense Tracker. Goodbye!")
             break
 
         else:
