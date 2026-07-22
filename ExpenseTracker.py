@@ -9,6 +9,43 @@ FILENAME = "expenses.csv"
 FIELDS = ["Date", "Category", "Description", "Amount"]
 
 
+def get_non_empty_string(prompt):
+    while True:
+        value = input(prompt).strip()
+
+        if value:
+            return value
+
+        print("Input cannot be empty.")
+
+
+def get_positive_float(prompt):
+    while True:
+        try:
+            value = float(input(prompt))
+
+            if value <= 0:
+                print("Amount must be greater than zero.")
+            else:
+                return value
+
+        except ValueError:
+            print("Please enter a valid number.")
+
+def get_valid_date(prompt):
+    while True:
+        value = input(prompt).strip()
+
+        if value == "":
+            return datetime.today().strftime("%Y-%m-%d")
+
+        try:
+            datetime.strptime(value, "%Y-%m-%d")
+            return value
+
+        except ValueError:
+            print("Please enter the date as YYYY-MM-DD.")
+
 def initialize_file():
     if not os.path.exists(FILENAME):
         with open(FILENAME, "w", newline="") as file:
