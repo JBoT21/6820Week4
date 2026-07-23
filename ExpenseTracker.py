@@ -2,11 +2,61 @@ import csv
 import os
 from datetime import datetime
 from collections import defaultdict
+import matplotlib.pyplot as plt
 
 FILENAME = "expenses.csv"
 
 FIELDS = ["Date", "Category", "Description", "Amount"]
 
+
+def get_non_empty_string(prompt):
+    while True:
+        value = input(prompt).strip()
+
+        if value:
+            return value
+
+        print("Input cannot be empty.")
+
+
+def get_positive_float(prompt):
+    while True:
+        try:
+            value = float(input(prompt))
+
+            if value <= 0:
+                print("Amount must be greater than zero.")
+            else:
+                return value
+
+        except ValueError:
+            print("Please enter a valid number.")
+
+def get_valid_date(prompt):
+    while True:
+        value = input(prompt).strip()
+
+        if value == "":
+            return datetime.today().strftime("%Y-%m-%d")
+
+        try:
+            datetime.strptime(value, "%Y-%m-%d")
+            return value
+
+        except ValueError:
+            print("Please enter the date as YYYY-MM-DD.")
+
+def get_menu_choice(minimum, maximum):
+    while True:
+        choice = input("Choose an option: ").strip()
+
+        if choice.isdigit():
+            choice = int(choice)
+
+            if minimum <= choice <= maximum:
+                return choice
+
+        print(f"Please enter a number from {minimum} to {maximum}.")
 
 def initialize_file():
     if not os.path.exists(FILENAME):
@@ -41,22 +91,10 @@ def save_expense(expense):
 def add_expense():
     print("\nAdd New Expense")
 
-    category = input("Category: ").strip()
-    description = input("Description: ").strip()
-
-    while True:
-        try:
-            amount = float(input("Amount: $"))
-            if amount <= 0:
-                raise ValueError
-            break
-        except ValueError:
-            print("Enter a positive number.")
-
-    date = input("Date (YYYY-MM-DD) [today]: ").strip()
-
-    if not date:
-        date = datetime.today().strftime("%Y-%m-%d")
+    category = get_non_empty_string("Category: ")
+    description = get_non_empty_string("Description: ")
+    amount = get_positive_float("Amount: $")
+    date = get_valid_date("Date (YYYY-MM-DD) [Press Enter for today]: ")
 
     expense = {
         "Date": date,
@@ -66,7 +104,7 @@ def add_expense():
     }
 
     save_expense(expense)
-    print("Expense saved.")
+    print("\nExpense saved successfully!")
 
 
 def view_expenses():
@@ -95,7 +133,9 @@ def view_expenses():
 
 
 def search_category():
-    category = input("\nCategory to search: ").strip().lower()
+    category = get_non_empty_string(
+        "\nCategory to search: "
+    ).lower()
 
     expenses = load_expenses()
 
@@ -113,9 +153,9 @@ def search_category():
             total += item["Amount"]
 
     if found:
-        print(f"Category Total: ${total:.2f}")
+        print(f"\nCategory Total: ${total:.2f}")
     else:
-        print("No matching expenses found.")
+        print("\nNo matching expenses found.")
 
 
 def monthly_summary():
@@ -192,6 +232,106 @@ def export_report():
     print(f"Report exported to '{report_name}'.")
 
 
+def monthly_spending_graph():
+    expenses = load_expenses()
+
+    if not expenses:
+        print("\nNo expenses to graph.")
+        return
+
+    monthly_totals = defaultdict(float)
+
+    for expense in expenses:
+        date = datetime.strptime(
+            expense["Date"],
+            "%Y-%m-%d"
+        )
+
+        month = date.strftime("%Y-%m")
+        monthly_totals[month] += expense["Amount"]
+
+    months = sorted(monthly_totals.keys())
+    totals = [monthly_totals[m] for m in months]
+
+    plt.figure(figsize=(10, 5))
+
+    plt.plot(
+        months,
+        totals,
+        marker="o",
+        linewidth=2
+    )
+
+    plt.fill_between(months, totals, alpha=0.25)
+
+    for month, total in zip(months, totals):
+        plt.text(
+            month,
+            total,
+            f"${total:.0f}",
+            ha="center",
+            va="bottom"
+        )
+
+    plt.title("Monthly Spending")
+    plt.xlabel("Month")
+    plt.ylabel("Total Spent ($)")
+    plt.grid(True)
+
+    plt.xticks(rotation=45)
+    plt.tight_layout()
+
+    plt.show()
+
+def category_spending_graph():
+    expenses = load_expenses()
+
+    if not expenses:
+        print("\nNo expenses to graph.")
+        return
+
+    category_totals = defaultdict(float)
+
+    # Sum spending by category
+    for expense in expenses:
+        category_totals[expense["Category"]] += expense["Amount"]
+
+    categories = list(category_totals.keys())
+    totals = list(category_totals.values())
+
+    plt.figure(figsize=(8, 8))
+
+    plt.pie(
+        totals,
+        labels=categories,
+        autopct="%1.1f%%",
+        startangle=90
+        )
+
+    plt.title("Spending by Category")
+    plt.axis("equal")      # Makes the pie a perfect circle
+
+    plt.show()
+
+def analytics_menu():
+    while True:
+        print("\nAnalytics")
+        print("1. Monthly Spending Trend")
+        print("2. Spending by Category")
+        print("3. Return to Main Menu")
+
+        choice = get_menu_choice(1, 3)
+
+        if choice == 1:
+            monthly_spending_graph()
+
+        elif choice == 2:
+            category_spending_graph()
+
+        elif choice == 3:
+            break
+
+
 def menu():
     initialize_file()
 
@@ -203,34 +343,35 @@ def menu():
         print("4. Monthly Summary")
         print("5. Highest Expense")
         print("6. Export Report")
-        print("7. Exit")
+        print("7. Analytics")
+        print("8. Exit")  
 
-        choice = input("Choose an option: ").strip()
+        choice = get_menu_choice(1, 8)
 
-        if choice == "1":
+        if choice == 1:
             add_expense()
 
-        elif choice == "2":
+        elif choice == 2:
             view_expenses()
 
-        elif choice == "3":
+        elif choice == 3:
             search_category()
 
-        elif choice == "4":
+        elif choice == 4:
             monthly_summary()
 
-        elif choice == "5":
+        elif choice == 5:
             highest_expense()
 
-        elif choice == "6":
+        elif choice == 6:
             export_report()
 
-        elif choice == "7":
-            print("Goodbye!")
-            break
+        elif choice == 7:
+            analytics_menu()
 
-        else:
-            print("Invalid selection.")
+        elif choice == 8:
+            print("\nExiting Expense Tracker. Goodbye!")
+            break
 
 
 if __name__ == "__main__":
