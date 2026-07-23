@@ -313,6 +313,24 @@ def category_spending_graph():
 
     plt.show()
 
+def analytics_menu():
+    while True:
+        print("\nAnalytics")
+        print("1. Monthly Spending Trend")
+        print("2. Spending by Category")
+        print("3. Return to Main Menu")
+
+        choice = get_menu_choice(1, 3)
+
+        if choice == 1:
+            monthly_spending_graph()
+
+        elif choice == 2:
+            category_spending_graph()
+
+        elif choice == 3:
+            break
+
 
 def menu():
     initialize_file()
@@ -325,11 +343,10 @@ def menu():
         print("4. Monthly Summary")
         print("5. Highest Expense")
         print("6. Export Report")
-        print("7. Monthly Spending Graph")
-        print("8. Spending by Category")
-        print("9. Exit")     
+        print("7. Analytics")
+        print("8. Exit")  
 
-        choice = get_menu_choice(1, 9)
+        choice = get_menu_choice(1, 8)
 
         if choice == 1:
             add_expense()
@@ -350,12 +367,9 @@ def menu():
             export_report()
 
         elif choice == 7:
-            monthly_spending_graph()
+            analytics_menu()
 
         elif choice == 8:
-            category_spending_graph()
-
-        elif choice == 9:
             print("\nExiting Expense Tracker. Goodbye!")
             break
 
